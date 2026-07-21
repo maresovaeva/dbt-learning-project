@@ -5,4 +5,4 @@ sources:
     database: bigquery-public-data
     schema: ga4_obfuscated_sample_ecommerce
     tables:
-      - name: events_20210131
+      - name: events_*
