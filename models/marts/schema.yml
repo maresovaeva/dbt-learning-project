@@ -1,0 +1,12 @@
+version: 2
+
+models:
+  - name: fct_sessions_daily
+    columns:
+      - name: session_date
+        tests:
+          - not_null
+          - unique
+      - name: total_sessions
+        tests:
+          - not_null
