@@ -2,13 +2,14 @@ version: 2
 
 models:
   - name: stg_events
+    description: "One row per GA4 event, unnested from event_params. Filtered to Jan 2021, incrementally loaded."
     columns:
       - name: user_pseudo_id
-        tests:
-          - not_null
+        description: "Anonymous device/user identifier from GA4."
+        tests: [not_null]
       - name: event_name
-        tests:
-          - not_null
+        description: "Name of the GA4 event (e.g. page_view, purchase, scroll)."
+        tests: [not_null]
       - name: session_id
-        tests:
-          - not_null
+        description: "GA4 session ID, unique only in combination with user_pseudo_id."
+        tests: [not_null]

@@ -1,11 +1,11 @@
 version: 2
-
 models:
   - name: int_sessions
+    description: "One row per session, aggregated from stg_events. Session boundaries defined by (user_pseudo_id, session_id)."
     columns:
       - name: session_id
-        tests:
-          - not_null
+        description: "GA4 session ID. Not globally unique — must be combined with user_pseudo_id."
+        tests: [not_null]
       - name: session_duration_seconds
-        tests:
-          - not_null
+        description: "Time between first and last event in the session, in seconds."
+        tests: [not_null]

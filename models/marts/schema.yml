@@ -1,12 +1,11 @@
 version: 2
-
 models:
   - name: fct_sessions_daily
+    description: "One row per calendar day. Session volume, engagement, and purchase conversion for stakeholder reporting."
     columns:
       - name: session_date
-        tests:
-          - not_null
-          - unique
+        description: "Calendar date the session started (UTC)."
+        tests: [not_null, unique]
       - name: total_sessions
-        tests:
-          - not_null
+        description: "Count of distinct sessions on this date."
+        tests: [not_null]
