@@ -1,0 +1,43 @@
+name: dbt CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  dbt-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dbt
+        run: pip install dbt-bigquery
+
+      - name: Write service account key
+        run: echo '${{ secrets.BIGQUERY_KEYFILE }}' > /tmp/keyfile.json
+
+      - name: Write profiles.yml
+        run: |
+          mkdir -p ~/.dbt
+          cat <<EOF > ~/.dbt/profiles.yml
+          my_project:
+            target: dev
+            outputs:
+              dev:
+                type: bigquery
+                method: service-account
+                project: dbt-learning-503008
+                dataset: dbt_dev
+                threads: 4
+                keyfile: /tmp/keyfile.json
+                location: US
+          EOF
+
+      - name: dbt build
+        run: dbt build
