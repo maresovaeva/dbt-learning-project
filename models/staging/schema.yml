@@ -9,7 +9,7 @@ models:
         tests: [not_null]
       - name: event_name
         description: "Name of the GA4 event (e.g. page_view, purchase, scroll)."
-        tests: [not_null]
+        tests: [not_null, unique]
       - name: session_id
         description: "GA4 session ID, unique only in combination with user_pseudo_id."
         tests: [not_null]
