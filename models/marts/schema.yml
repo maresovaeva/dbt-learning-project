@@ -23,3 +23,16 @@ models:
       - name: day_1_retention_rate
         description: "Share of the cohort that returned exactly one day later."
         tests: [not_null]
+
+  - name: fct_funnel_purchase
+    description: "Session-level purchase funnel: view_item to add_to_cart to purchase, for the full project date range."
+    columns:
+      - name: total_sessions
+        description: "Total distinct sessions in the dataset."
+        tests: [not_null]
+      - name: view_to_cart_rate
+        description: "Share of item-viewing sessions that also added to cart."
+        tests: [not_null]
+      - name: cart_to_purchase_rate
+        description: "Share of add-to-cart sessions that completed a purchase."
+        tests: [not_null]
