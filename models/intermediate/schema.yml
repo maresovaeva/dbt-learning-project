@@ -8,4 +8,7 @@ models:
         tests: [not_null]
       - name: session_duration_seconds
         description: "Time between first and last event in the session, in seconds."
-        tests: [not_null]
+        tests: [not_null, non_negative]
+      - name: event_count
+        description: "Number of events in the session."
+        tests: [not_null, non_negative]
