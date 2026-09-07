@@ -1,5 +1,4 @@
 version: 2
-
 models:
   - name: fct_sessions_daily
     description: "One row per calendar day. Session volume, engagement, and purchase conversion for stakeholder reporting."
@@ -10,9 +9,11 @@ models:
       - name: total_sessions
         description: "Count of distinct sessions on this date."
         tests: [not_null]
-
   - name: fct_user_retention
-    description: "Day-1 retention by first-session cohort date. One row per cohort date."
+    description: >
+      Day-1 retention by first-session cohort date. One row per cohort date.
+      Cohorts whose day-1 window isn't fully observed yet (i.e. the most
+      recent day(s) of data) are excluded — see fct_user_retention.sql.
     columns:
       - name: first_session_date
         description: "Date of a user's first session (cohort date)."
@@ -21,9 +22,10 @@ models:
         description: "Number of distinct users who first appeared on this date."
         tests: [not_null]
       - name: day_1_retention_rate
-        description: "Share of the cohort that returned exactly one day later."
+        description: >
+          Share of the cohort that returned exactly one day later.
+          Only calculated for cohorts with a fully observed day-1 window.
         tests: [not_null]
-
   - name: fct_funnel_purchase
     description: "Session-level purchase funnel: view_item to add_to_cart to purchase, for the full project date range."
     columns:
