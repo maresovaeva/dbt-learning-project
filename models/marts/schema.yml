@@ -30,7 +30,16 @@ models:
     description: "Session-level purchase funnel: view_item to add_to_cart to purchase, for the full project date range."
     columns:
       - name: total_sessions
-        description: "Total distinct sessions in the dataset."
+        description: "Total sessions in the dataset (one row per session/user in int_sessions)."
+        tests: [not_null]
+      - name: sessions_viewed_item
+        description: "Sessions that included at least one view_item event."
+        tests: [not_null]
+      - name: sessions_added_to_cart
+        description: "Sessions that viewed an item and also added to cart."
+        tests: [not_null]
+      - name: sessions_purchased
+        description: "Sessions that viewed an item, added to cart, and completed a purchase."
         tests: [not_null]
       - name: view_to_cart_rate
         description: "Share of item-viewing sessions that also added to cart."
