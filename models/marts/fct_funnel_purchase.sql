@@ -8,9 +8,8 @@ with funnel_events as (
     from {{ ref('stg_events') }}
     group by 1, 2
 )
-
 select
-    count(distinct session_id) as total_sessions,
+    count(*) as total_sessions,
     countif(viewed_item = 1) as sessions_viewed_item,
     countif(viewed_item = 1 and added_to_cart = 1) as sessions_added_to_cart,
     countif(viewed_item = 1 and added_to_cart = 1 and purchased = 1) as sessions_purchased,
