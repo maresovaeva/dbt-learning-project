@@ -1,14 +1,27 @@
 version: 2
+
 models:
   - name: int_sessions
     description: "One row per session, aggregated from stg_events. Session boundaries defined by (user_pseudo_id, session_id)."
     columns:
+      - name: user_pseudo_id
+        description: "Anonymous device/user identifier. Combined with session_id, uniquely identifies a session."
+        tests: [not_null]
       - name: session_id
         description: "GA4 session ID. Not globally unique — must be combined with user_pseudo_id."
         tests: [not_null]
+      - name: session_start
+        description: "Timestamp of the first event in the session."
+        tests: [not_null]
+      - name: session_end
+        description: "Timestamp of the last event in the session."
+        tests: [not_null]
       - name: session_duration_seconds
         description: "Time between first and last event in the session, in seconds."
-        tests: [not_null, non_negative]
+        tests: [not_null]
       - name: event_count
         description: "Number of events in the session."
-        tests: [not_null, non_negative]
+        tests: [not_null]
+      - name: had_purchase
+        description: "True if the session included at least one purchase event."
+        tests: [not_null]

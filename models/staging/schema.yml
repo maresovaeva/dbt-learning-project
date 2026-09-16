@@ -10,6 +10,11 @@ models:
       - name: event_name
         description: "Name of the GA4 event (e.g. page_view, purchase, scroll)."
         tests: [not_null]
+      - name: event_ts
+        description: "Event timestamp, converted from GA4's microsecond epoch."
+        tests: [not_null]
+      - name: page_location
+        description: "Full URL of the page where the event fired. Null for events without a page context."
       - name: session_id
         description: "GA4 session ID, unique only in combination with user_pseudo_id."
         tests: [not_null]
