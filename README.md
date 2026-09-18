@@ -1,37 +1,43 @@
-# dbt Learning Project — GA4 Event Analytics
+# dbt Learning Project: GA4 Ecommerce Analytics
 
-A hands-on dbt Core project built end-to-end against a public GA4 e-commerce dataset, as a practical bridge from Digital Analytics Manager toward Analytics Engineer. Not a tutorial clone — every model, test, and CI step here was built and debugged from scratch.
+A dbt project analyzing the [BigQuery public GA4 ecommerce sample dataset](https://console.cloud.google.com/marketplace/product/bigquery-public-data/ga4-ecommerce-sample) (Jan 2021) — built to practice production dbt patterns (incremental models, testing, documentation) and to answer a real analytical question: where does user retention and purchase conversion break down?
 
-## Stack
-- **Warehouse:** Google BigQuery
-- **dbt:** dbt-core 1.12.0 + dbt-bigquery
-- **Source data:** `bigquery-public-data.ga4_obfuscated_sample_ecommerce` (Google Merchandise Store, Jan 2021)
-- **CI:** GitHub Actions, running `dbt build` on every push and pull request
+**Full write-up:** see [`CASE_STUDY.md`](CASE_STUDY.md) for the question, findings, and data quality issues found and fixed along the way.
 
 ## Project structure
+
+```
 models/
-├── staging/ stg_events (incremental, partitioned, unnested GA4 event_params)
-├── intermediate/ int_sessions (session-level aggregation)
-└── marts/
-├── fct_sessions_daily daily session volume, engagement, purchase rate
-├── fct_user_retention day-1 retention by cohort date
-└── fct_funnel_purchase view_item → add_to_cart → purchase conversion
-
-
-## Notable design decisions
-- **Composite session key** (`user_pseudo_id` + `session_id`) — GA4's `ga_session_id` is not globally unique on its own.
-- **Incremental + partitioned staging model** with a bounded-lookback filter guarded by `coalesce()` — an earlier version had a silent NULL-comparison bug that would have quietly stopped ingesting new data. See commit history / project journal for details.
-- **Custom generic test** (`tests/generic/test_non_negative.sql`) enforcing no negative durations or counts, beyond dbt's built-in `not_null`/`unique`.
-
-## Running locally
-```bash
-dbt debug          # verify connection
-dbt build          # run + test everything
-dbt docs generate && dbt docs serve   # browse lineage graph and column docs
+  staging/       stg_events        — one row per GA4 event, unnested from raw event_params
+  intermediate/  int_sessions      — one row per session
+  marts/         fct_sessions_daily     — daily session volume, engagement, purchase conversion
+                 fct_user_retention     — day-1 retention by cohort date
+                 fct_funnel_purchase    — view_item → add_to_cart → purchase funnel
+analyses/
+  retention_analysis.ipynb   — Python/Jupyter analysis and interpretation, pulling from the marts above
+tests/
+  assert_funnel_monotonic.sql — singular test guarding against funnel step counts increasing down-funnel
+assets/
+  chart PNGs referenced in CASE_STUDY.md
 ```
 
-## Workflow
-New work happens on a feature branch, opened as a pull request, and merged only after GitHub Actions CI passes. `main` only ever contains code that's already been validated.
+## Running this project
 
-## Status
-Actively in progress. See the project journal for the full build log, including every real infrastructure problem hit and how it was resolved.
+Requires a BigQuery connection with access to the `bigquery-public-data` project (the GA4 sample dataset is public).
+
+```bash
+# dbt
+pip install dbt-bigquery
+gcloud auth application-default login
+dbt build
+
+# Notebook
+pip install -r requirements.txt
+jupyter notebook analyses/retention_analysis.ipynb
+```
+
+## Notable design decisions
+
+- **`stg_events` and `fct_sessions_daily` are incremental**, filtered/merged on event/session date rather than full-refreshing each run.
+- **`fct_funnel_purchase` counts event *presence* per session, not strict order** (e.g. add-to-cart doesn't have to follow view-item). Verified this affects only ~0.26% of sessions — see the model's SQL comment and `CASE_STUDY.md` for detail.
+- **`session_id` from GA4 is not globally unique** across users — every model that counts sessions uses `count(*)` on rows already deduplicated to `(user_pseudo_id, session_id)`, not `count(distinct session_id)`. Two real bugs from getting this wrong were caught and fixed during development (see `CASE_STUDY.md`).
