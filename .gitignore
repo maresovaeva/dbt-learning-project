@@ -3,3 +3,5 @@ target/
 dbt_packages/
 logs/
 .env
+.ipynb_checkpoints/
+desktop.ini
