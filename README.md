@@ -8,37 +8,39 @@ Two connected pieces of work on GA4 data in BigQuery:
 **Full write-up of the analysis:** see [`CASE_STUDY.md`](CASE_STUDY.md) for the question, findings, and data quality issues found and fixed along the way.
 
 ## Project structure
-
 ```
 models/
-  staging/       stg_events        — one row per GA4 event, unnested from raw event_params
-                 stg_shop_events   — one row per GA4 event from my own instrumented store
-                 stg_shop_items    — one row per event x item, unnested from the items array
-  intermediate/  int_sessions      — one row per session
-  marts/         fct_sessions_daily     — daily session volume, engagement, purchase conversion
-                 fct_user_retention     — day-1 retention by cohort date
-                 fct_funnel_purchase    — view_item → add_to_cart → purchase funnel (sample data)
-                 fct_shop_funnel        — same funnel on my own instrumented data
-analyses/
-  retention_analysis.ipynb   — Python/Jupyter analysis and interpretation, pulling from the marts above
-tests/
-  assert_funnel_monotonic.sql — singular test guarding against funnel step counts increasing down-funnel
-assets/
-  chart PNGs referenced in CASE_STUDY.md
+	staging/ stg_events — one row per GA4 event, unnested from raw event_params
+	stg_shop_events — one row per GA4 event from my own instrumented store
+	stg_shop_items — one row per event x item, unnested from the items array
+	intermediate/ int_sessions — one row per session
+	marts/ fct_sessions_daily — daily session volume, engagement, purchase conversion
+	fct_user_retention — day-1 retention by cohort date
+	fct_funnel_purchase — view_item → add_to_cart → purchase funnel (sample data)
+	fct_shop_funnel — same funnel on my own instrumented data
+	analyses/
+	retention_analysis.ipynb — Python/Jupyter analysis and interpretation, pulling from the marts above
+	tests/
+	assert_funnel_monotonic.sql — singular test guarding against funnel step counts increasing down-funnel
+	assets/
+	chart PNGs referenced in CASE_STUDY.md
 ```
 
 Models prefixed `shop_` read from my own store's export; everything else reads from the public sample.
+
 
 ## Instrumentation
 
 A Shopify test store, instrumented end to end:
 
 ```
-tracking spec  →  dataLayer pushes (theme.liquid)  →  GTM Custom Event triggers
-               →  GA4 ecommerce tags  →  daily BigQuery export  →  dbt
+tracking spec → dataLayer pushes (theme.liquid) → GTM Custom Event triggers
+               → GA4 ecommerce tags → daily BigQuery export → dbt
 ```
 
 Every hop was verified separately rather than inferred from the one before it. The events in `fct_shop_funnel` exist because of a spec I wrote, pushes I implemented, tags I configured and QA'd, and an export I set up — not because a platform provided them.
+
+**The spec:** [`docs/ecommerce-tracking-spec.md`](docs/ecommerce-tracking-spec.md) — six funnel events, the item schema, seven edge cases that have to be decided before implementation, QA acceptance criteria, and eight open questions with named owners.
 
 What this covers that the sample-data analysis does not:
 
