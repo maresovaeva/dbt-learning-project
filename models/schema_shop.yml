@@ -1,0 +1,57 @@
+version: 2
+
+models:
+  - name: stg_shop_events
+    description: >
+      One row per GA4 event from the Shopify test store (property G-H5E4XVRWJ8).
+      Instrumented from the tracking spec: dataLayer pushes in theme.liquid ->
+      GTM Custom Event triggers -> GA4 ecommerce tags -> daily BigQuery export.
+    columns:
+      - name: user_pseudo_id
+        description: >
+          GA4 client ID, read from the _ga cookie. Null identity under denied
+          consent, so funnel and retention cover consented traffic only.
+        tests: [not_null]
+      - name: session_id
+        description: "GA4 session ID. Unique only in combination with user_pseudo_id."
+      - name: event_name
+        description: "GA4 event name, e.g. page_view, view_item, add_to_cart."
+        tests: [not_null]
+      - name: page_type
+        description: "Custom parameter from the JS - Page Type GTM variable: home/plp/pdp/cart/checkout/other."
+
+  - name: stg_shop_items
+    description: "One row per event x item, unnested from the GA4 items array."
+    columns:
+      - name: item_id
+        description: >
+          Variant-level SKU where the product has one, otherwise the Shopify
+          variant ID via the Liquid default filter.
+        tests: [not_null]
+      - name: item_name
+        description: "Human-readable product name."
+        tests: [not_null]
+      - name: item_variant
+        description: >
+          Readable variant. Known defect: view_item and add_to_cart resolve
+          this differently, so values are inconsistent between the two events.
+      - name: price
+        description: "Unit price the customer pays, as a number."
+        tests: [not_null]
+
+  - name: fct_shop_funnel
+    description: >
+      Ecommerce funnel, one row per step. begin_checkout and purchase are
+      listed but not yet implemented — they return 0 until the Shopify
+      Customer Events API work is done.
+    columns:
+      - name: step_number
+        description: "Funnel position, 1-4."
+        tests: [not_null, unique]
+      - name: step_name
+        description: "GA4 event name for the step."
+        tests: [not_null, unique]
+      - name: users
+        description: "Distinct users reaching this step. Null where the event is not instrumented."
+      - name: step_conversion_rate
+        description: "Users at this step divided by users at the previous step. Null on step 1."
